@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* ================================
+     TIPOGRAFÍAS NEXORA
+     ================================ */
+
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+
+  /* ================================
+     COLORES NEXORA
+     ================================ */
+
+  --color-ink: #161327;
+
+  --color-nx-950: #120F26;
+  --color-nx-900: #1A1533;
+  --color-nx-850: #211A40;
+  --color-nx-800: #2A2150;
+  --color-nx-700: #382A66;
+  --color-nx-600: #4A3480;
+  --color-nx-500: #6D3FBF;
+
+  --color-nx-violet: #7C4DE0;
+  --color-nx-iris: #5B4FE0;
+  --color-nx-lilac: #B39CF0;
+
+  --color-nx-bg: #F5F3FC;
+  --color-nx-card: #FFFFFF;
+  --color-nx-line: #E7E2F5;
+  --color-nx-teal: #17B8A6;
+
+
+  /* ================================
+     BRAND
+     ================================ */
+
+  --color-brand-violet: #7C4DE0;
+  --color-brand-indigo: #4F46E5;
+  --color-brand-sky: #3E8FF2;
+  --color-brand-mint: #17B8A6;
+
+
+  /* ================================
+     SOMBRAS
+     ================================ */
+
+  --shadow-soft:
+    0 1px 2px rgba(23, 17, 58, 0.04),
+    0 8px 24px -12px rgba(23, 17, 58, 0.12);
+
+  --shadow-pop:
+    0 12px 32px -8px rgba(93, 63, 209, 0.35);
+}
+
+
+/* ================================
+   BASE NEXORA
+   ================================ */
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-nx-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
