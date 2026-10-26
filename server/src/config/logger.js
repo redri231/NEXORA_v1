@@ -1,13 +1,24 @@
-const pino = require('pino');
+require("dotenv").config({ quiet: true });
+
+const pino = require("pino");
 
 const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  redact: [
-    'password',
-    'password_hash',
-    'req.headers.authorization',
-    'req.headers.cookie'
-  ]
+  name: "nexora-api",
+  level: process.env.LOG_LEVEL || "info",
+  timestamp: pino.stdTimeFunctions.isoTime,
+  redact: {
+    paths: [
+      "password",
+      "password_hash",
+      "token",
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "req.body.password",
+      "req.body.password_hash",
+      "req.body.token",
+    ],
+    censor: "[REDACTED]",
+  },
 });
 
 module.exports = logger;

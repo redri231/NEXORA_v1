@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const ExcelJS = require("exceljs");
 const service = require("../services/logistica.service");
 const cloudinary = require("../services/cloudinary.service");
@@ -6,7 +7,7 @@ const responderError = (res, error, operacion) => {
     if (error.code === "23514") return res.status(409).json({ success: false, mensaje: "El movimiento dejaría el stock por debajo de cero." });
     if (["23505", "23503", "23514", "PROVEEDOR_INVALIDO"].includes(error.code)) return res.status(400).json({ success: false, mensaje: error.code === "23505" ? "El código de producto ya existe." : error.message || "Verifica los datos relacionados." });
     if (error.code === "TRANSICION_INVALIDA") return res.status(409).json({ success: false, mensaje: error.message });
-    console.error(`Error ${operacion}:`, error);
+    logger.error({ err: error }, `Error ${operacion}:`);
     res.status(error.code === "CLOUDINARY_CONFIG" ? 503 : 500).json({ success: false, mensaje: error.code === "CLOUDINARY_CONFIG" ? error.message : `No se pudo ${operacion}.` });
 };
 

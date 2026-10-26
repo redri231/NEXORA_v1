@@ -4,6 +4,15 @@ import { api } from "../services/api";
 const AuthContext = createContext(null);
 const STORAGE_KEY = "nexora.session";
 
+async function cargarPermisos(usuario) {
+  try {
+    const respuesta = await api.get("/configuracion/mis-permisos");
+    return { ...usuario, modulos_permitidos: respuesta.data?.data || [] };
+  } catch {
+    return usuario;
+  }
+}
+
 function leerSesionGuardada() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -32,8 +41,9 @@ export function AuthProvider({ children }) {
       setCargandoSesion(false);
     } else {
       api.get("/auth/me")
-        .then((respuesta) => {
-          if (activa) setSesion({ token: guardada.token, usuario: respuesta.data });
+        .then(async (respuesta) => {
+          const usuario = await cargarPermisos(respuesta.data);
+          if (activa) setSesion({ token: guardada.token, usuario });
         })
         .catch(() => {
           localStorage.removeItem(STORAGE_KEY);
@@ -53,6 +63,8 @@ export function AuthProvider({ children }) {
   async function iniciarSesion(username, password) {
     const respuesta = await api.post("/auth/login", { username, password });
     const nuevaSesion = respuesta.data;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevaSesion));
+    nuevaSesion.usuario = await cargarPermisos(nuevaSesion.usuario);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevaSesion));
     setSesion(nuevaSesion);
     return nuevaSesion;

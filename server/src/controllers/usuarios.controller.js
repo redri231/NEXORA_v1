@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const usuariosService = require("../services/usuarios.service");
 
 
@@ -14,7 +15,7 @@ async function listarUsuarios(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         res.status(500).json({
             success: false,
@@ -47,7 +48,7 @@ async function obtenerUsuario(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         res.status(500).json({
             success: false,
@@ -71,7 +72,7 @@ async function crearUsuario(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         if (error.code === "23505") {
 
@@ -114,7 +115,7 @@ async function actualizarUsuario(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         if (error.code === "23505") {
 
@@ -157,7 +158,7 @@ async function desactivarUsuario(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         res.status(500).json({
             success: false,
@@ -180,7 +181,7 @@ async function listarRoles(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud de usuarios");
 
         res.status(500).json({
             success: false,

@@ -1,9 +1,70 @@
+const logger = require("../config/logger");
 const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
+const { prepararHojaExistente } = require("../utils/reporteExcel");
 
 const reportesService = require("../services/reportes.service");
 const cotizacionesService = require("../services/cotizaciones.service");
 const ventasService = require("../services/ventas.service");
 const campaniasService = require("../services/campanias.service");
+const logisticaService = require("../services/logistica.service");
+const finanzasService = require("../services/finanzas.service");
+
+const REPORTES_PDF = {
+    usuarios: { titulo: "Directorio de usuarios", hoja: reportesService.obtenerUsuariosReporte, columnas: [["Usuario", "username"], ["Nombre", "nombres"], ["Apellido", "apellidos"], ["Correo", "email"], ["Cargo", "cargo"], ["Área", "area"], ["Rol", "rol"], ["Estado", "estado"]] },
+    clientes: { titulo: "Clientes", hoja: reportesService.obtenerClientesReporte, columnas: [["ID", "id_cliente"], ["Cliente", "razon_social_nombres"], ["Tipo", "tipo_cliente"], ["Documento", "num_documento"], ["Correo", "email"], ["Teléfono", "telefono"], ["Estado", "estado"], ["Responsable", "responsable"]] },
+    leads: { titulo: "Leads", hoja: reportesService.obtenerLeadsReporte, columnas: [["ID", "id_lead"], ["Lead", "nombre"], ["Contacto", "contacto"], ["Correo", "email"], ["Teléfono", "telefono"], ["Fuente", "fuente"], ["Estado", "estado"], ["Cliente convertido", "cliente_convertido"]] },
+    cotizaciones: { titulo: "Cotizaciones", hoja: (f) => cotizacionesService.listar(f), columnas: [["Código", "codigo"], ["Cliente", "cliente"], ["Servicios", "servicios"], ["Monto (S/)", "monto_total"], ["Emisión", "fecha_emision"], ["Vencimiento", "fecha_vencimiento"], ["Estado", "estado"], ["Responsable", "responsable"]] },
+    ventas: { titulo: "Ventas", hoja: (f) => ventasService.listar(f), columnas: [["N.º venta", "codigo"], ["Cliente", "cliente"], ["Cotización", "cotizacion"], ["Servicios", "servicios"], ["Monto (S/)", "monto_total"], ["Fecha", "fecha"], ["Proyecto", "proyecto"], ["Estado", "estado"]] },
+    campanias: { titulo: "Campañas", hoja: (f) => campaniasService.listar(f), columnas: [["Campaña", "nombre"], ["Cliente", "cliente"], ["Proyecto", "proyecto"], ["Responsable", "responsable"], ["Inicio", "fecha_inicio"], ["Fin", "fecha_fin"], ["Presupuesto", "presupuesto"], ["Estado", "estado"], ["ROI vigente", (x) => x.indicador_vigente?.roi]] },
+    inventario: { titulo: "Inventario", hoja: (f) => logisticaService.listarProductos(f), columnas: [["Código", "codigo"], ["Producto", "nombre"], ["Categoría", "categoria"], ["Unidad", "unidad_medida"], ["Stock", "stock_actual"], ["Mínimo", "stock_minimo"], ["Ubicación", "ubicacion"], ["Estado", "estado"], ["Proveedores", (x) => (x.proveedores || []).map((p) => p.nombre).join(", ")]] },
+    finanzas: { titulo: "Movimientos financieros", hoja: (f) => finanzasService.listarMovimientos(f), columnas: [["Fecha", "fecha"], ["Tipo", "tipo"], ["Categoría", "categoria"], ["Descripción", "descripcion"], ["Cliente", "cliente"], ["Proyecto", "proyecto"], ["Proveedor", "proveedor"], ["Monto (S/)", "monto"], ["Estado", "estado"], ["Método de pago", "metodo_pago"]] },
+};
+
+async function descargarReportePDF(req, res) {
+    const tipo = req.params.tipo;
+    const configuracion = REPORTES_PDF[tipo];
+    if (!configuracion) return res.status(404).json({ success: false, mensaje: "El reporte solicitado no existe." });
+    try {
+        const filas = await configuracion.hoja(req.validatedQuery || {});
+        const documento = new PDFDocument({ size: "A4", layout: "landscape", margin: 32, bufferPages: true });
+        const fecha = new Date().toISOString().slice(0, 10);
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="NEXORA_${tipo}_${fecha}.pdf"`);
+        documento.pipe(res);
+        const ancho = documento.page.width - 64;
+        const anchoColumna = ancho / configuracion.columnas.length;
+        const altoFila = 30;
+        const dibujarCabecera = (continuacion = false) => {
+            documento.font("Helvetica-Bold").fontSize(17).fillColor("#302B63").text(`NEXORA · ${configuracion.titulo}${continuacion ? " (continuación)" : ""}`, 32, 28);
+            documento.font("Helvetica").fontSize(8).fillColor("#64748B").text(`Generado: ${new Date().toLocaleString("es-PE")} · Registros: ${filas.length}`, 32, 51);
+            let x = 32; let y = 72;
+            documento.font("Helvetica-Bold").fontSize(7).fillColor("#FFFFFF");
+            configuracion.columnas.forEach(([etiqueta]) => { documento.rect(x, y, anchoColumna, altoFila).fill("#6D28D9"); documento.fillColor("#FFFFFF").text(etiqueta, x + 4, y + 9, { width: anchoColumna - 8, height: 18, ellipsis: true }); x += anchoColumna; });
+            return y + altoFila;
+        };
+        let y = dibujarCabecera();
+        filas.forEach((fila, indice) => {
+            if (y + altoFila > documento.page.height - 30) { documento.addPage(); y = dibujarCabecera(true); }
+            let x = 32;
+            if (indice % 2 === 1) documento.rect(32, y, ancho, altoFila).fill("#F5F3FF");
+            configuracion.columnas.forEach(([, campo]) => {
+                const valor = typeof campo === "function" ? campo(fila) : fila[campo];
+                const texto = valor == null ? "—" : valor instanceof Date ? valor.toLocaleDateString("es-PE") : String(valor);
+                documento.font("Helvetica").fontSize(7).fillColor("#1F2937").text(texto.split(String.fromCharCode(10)).join(" ").split(String.fromCharCode(13)).join(" "), x + 4, y + 7, { width: anchoColumna - 8, height: altoFila - 10, ellipsis: true });
+                x += anchoColumna;
+            });
+            documento.strokeColor("#E5E7EB").moveTo(32, y + altoFila).lineTo(32 + ancho, y + altoFila).stroke();
+            y += altoFila;
+        });
+        if (!filas.length) documento.font("Helvetica").fontSize(10).fillColor("#64748B").text("No hay registros para los filtros seleccionados.", 32, y + 16);
+        documento.end();
+    } catch (error) {
+        logger.error({ err: error }, `Error generando PDF ${tipo}:`);
+        if (!res.headersSent) res.status(500).json({ success: false, mensaje: `No se pudo generar el PDF de ${configuracion.titulo.toLowerCase()}.` });
+        else res.destroy(error);
+    }
+}
 
 
 async function descargarReporteUsuarios(req, res) {
@@ -734,6 +795,7 @@ async function descargarReporteUsuarios(req, res) {
         );
 
 
+        prepararHojaExistente(worksheet, { titulo: "Usuarios y roles", filaCabecera: 6, soloCabecera: true });
         await workbook.xlsx.write(res);
 
         res.end();
@@ -741,13 +803,7 @@ async function descargarReporteUsuarios(req, res) {
 
     } catch (error) {
 
-        console.error(
-
-            "Error generando reporte de usuarios:",
-
-            error
-
-        );
+        logger.error({ err: error }, "Error generando reporte de usuarios:");
 
 
         res.status(500).json({
@@ -1749,6 +1805,7 @@ async function descargarReporteClientes(req, res) {
         );
 
 
+        prepararHojaExistente(worksheet, { titulo: "Clientes", filaCabecera: 6, soloCabecera: true });
         await workbook.xlsx.write(res);
 
         res.end();
@@ -1756,13 +1813,7 @@ async function descargarReporteClientes(req, res) {
 
     } catch (error) {
 
-        console.error(
-
-            "Error generando reporte de clientes:",
-
-            error
-
-        );
+        logger.error({ err: error }, "Error generando reporte de clientes:");
 
 
         res.status(500).json({
@@ -1815,10 +1866,11 @@ async function descargarReporteLeads(req, res) {
         const fecha = new Date().toISOString().slice(0, 10);
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename="NEXORA_Reporte_Leads_${fecha}.xlsx"`);
+        prepararHojaExistente(worksheet, { titulo: "Leads", subtitulo: "Reporte de Leads", portada: true });
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
-        console.error("Error generando reporte de leads:", error);
+        logger.error({ err: error }, "Error generando reporte de leads:");
         res.status(500).json({ success: false, mensaje: "No se pudo generar el reporte de leads." });
     }
 }
@@ -1862,10 +1914,11 @@ async function descargarReporteCotizaciones(req, res) {
         const fecha = new Date().toISOString().slice(0, 10);
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename="NEXORA_Cotizaciones_${fecha}.xlsx"`);
+        prepararHojaExistente(worksheet, { titulo: "Cotizaciones", subtitulo: "Reporte de Cotizaciones", portada: true });
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
-        console.error("Error generando reporte de cotizaciones:", error);
+        logger.error({ err: error }, "Error generando reporte de cotizaciones:");
         res.status(500).json({ success: false, mensaje: "No se pudo generar el reporte de cotizaciones." });
     }
 }
@@ -1906,10 +1959,11 @@ async function descargarReporteVentas(req, res) {
         const fecha = new Date().toISOString().slice(0, 10);
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename="NEXORA_Ventas_${fecha}.xlsx"`);
+        prepararHojaExistente(worksheet, { titulo: "Ventas", subtitulo: "Reporte de Ventas", portada: true });
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
-        console.error("Error generando reporte de ventas:", error);
+        logger.error({ err: error }, "Error generando reporte de ventas:");
         res.status(500).json({ success: false, mensaje: "No se pudo generar el reporte de ventas." });
     }
 }
@@ -1975,10 +2029,11 @@ async function descargarReporteCampanias(req, res) {
         const fecha = new Date().toISOString().slice(0, 10);
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename="NEXORA_Campanias_${fecha}.xlsx"`);
+        prepararHojaExistente(worksheet, { titulo: "Campañas", subtitulo: "Reporte de Campañas", portada: true });
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
-        console.error("Error generando reporte de campañas:", error);
+        logger.error({ err: error }, "Error generando reporte de campañas:");
         res.status(500).json({ success: false, mensaje: "No se pudo generar el reporte de campañas." });
     }
 }
@@ -1989,5 +2044,6 @@ module.exports = {
     descargarReporteLeads,
     descargarReporteCotizaciones,
     descargarReporteVentas,
-    descargarReporteCampanias
+    descargarReporteCampanias,
+    descargarReportePDF
 };

@@ -1,8 +1,9 @@
+const logger = require("../config/logger");
 const service = require("../services/tareas.service");
 
 async function listar(req, res) {
     try { res.json({ success: true, data: await service.listar(req.validatedQuery) }); }
-    catch (error) { console.error("Error listando tareas:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las tareas." }); }
+    catch (error) { logger.error({ err: error }, "Error listando tareas:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las tareas." }); }
 }
 
 async function obtener(req, res) {
@@ -15,13 +16,13 @@ async function obtener(req, res) {
 
 async function catalogos(req, res) {
     try { res.json({ success: true, data: await service.catalogos() }); }
-    catch (error) { console.error("Error cargando catálogos de tareas:", error); res.status(500).json({ success: false, mensaje: "No se pudieron cargar los catálogos." }); }
+    catch (error) { logger.error({ err: error }, "Error cargando catálogos de tareas:"); res.status(500).json({ success: false, mensaje: "No se pudieron cargar los catálogos." }); }
 }
 
 async function crear(req, res) {
     try { res.status(201).json({ success: true, mensaje: "Tarea creada correctamente.", data: await service.crear(req.body) }); }
     catch (error) {
-        console.error("Error creando tarea:", error);
+        logger.error({ err: error }, "Error creando tarea:");
         const status = error.code === "23503" ? 400 : 500;
         res.status(status).json({ success: false, mensaje: "No se pudo crear la tarea; verifica el proyecto y responsable seleccionados." });
     }

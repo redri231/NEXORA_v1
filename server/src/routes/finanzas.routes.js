@@ -1,0 +1,13 @@
+const express=require("express");
+const validarSolicitud=require("../middleware/validarSolicitud");
+const c=require("../controllers/finanzas.controller");
+const s=require("../validators/finanzas.schemas");
+const router=express.Router();
+router.get("/resumen",c.resumen);
+router.get("/serie-mensual",c.serie);
+router.get("/catalogos-gastos",c.catalogosGastos);
+router.get("/exportar",validarSolicitud({query:s.filtrosSchema}),c.exportar);
+router.get("/movimientos",validarSolicitud({query:s.filtrosSchema}),c.movimientos);
+router.post("/gastos",validarSolicitud({body:s.crearGastoSchema}),c.crearGasto);
+router.patch("/gastos/:id/estado",validarSolicitud({params:s.idParamsSchema,body:s.cambiarEstadoGastoSchema}),c.estadoGasto);
+module.exports=router;

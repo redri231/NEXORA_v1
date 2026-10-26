@@ -1120,6 +1120,8 @@ function CRM() {
     setMostrarModalLead(true);
   }
 
+  async function exportarClientesPDF() { try { const fecha = new Date().toISOString().slice(0, 10); await api.download("/reportes/clientes/pdf", `NEXORA_Reporte_Clientes_${fecha}.pdf`); } catch (error) { setError(error.message || "No se pudo exportar clientes en PDF."); } }
+
   function abrirEditarLead(lead) {
     setLeadSeleccionado(lead);
     setFormLead({
@@ -1236,6 +1238,8 @@ function CRM() {
       setExportandoLeads(false);
     }
   }
+
+  async function exportarLeadsPDF() { try { const fecha = new Date().toISOString().slice(0, 10); await api.download("/reportes/leads/pdf", `NEXORA_Reporte_Leads_${fecha}.pdf`); } catch (error) { setErrorLeads(error.message || "No se pudo exportar leads en PDF."); } }
 
 
   // ==========================================================
@@ -1989,6 +1993,8 @@ function CRM() {
 
               </button>
 
+              <button type="button" onClick={exportarClientesPDF} className="inline-flex items-center gap-2 border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg">Descargar PDF</button>
+
             </div>
 
 
@@ -2491,6 +2497,7 @@ function CRM() {
               >
                 {exportandoLeads ? "Exportando…" : "Exportar Excel"}
               </button>
+              <button type="button" onClick={exportarLeadsPDF} className="inline-flex items-center gap-2 border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg">Descargar PDF</button>
             </div>
 
             <div className="bg-white rounded-2xl shadow-soft border border-nx-line overflow-hidden overflow-x-auto">

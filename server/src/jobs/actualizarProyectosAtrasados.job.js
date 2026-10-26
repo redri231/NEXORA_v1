@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const proyectosService = require("../services/proyectos.service");
 
 const INTERVALO_MS = 60 * 60 * 1000;
@@ -9,8 +10,8 @@ function iniciarActualizacionProyectosAtrasados() {
         ejecutando = true;
         try {
             const actualizados = await proyectosService.marcarAtrasados();
-            if (actualizados > 0) console.info(`Proyectos marcados como atrasados: ${actualizados}`);
-        } catch (error) { console.error("No se pudieron actualizar los proyectos atrasados:", error.message); }
+            if (actualizados > 0) logger.info({ actualizados }, "Proyectos marcados como atrasados");
+        } catch (error) { logger.error({ err: error }, "No se pudieron actualizar los proyectos atrasados"); }
         finally { ejecutando = false; }
     };
     void revisar();

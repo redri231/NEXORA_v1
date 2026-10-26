@@ -1,8 +1,9 @@
+const logger = require("../config/logger");
 const service = require("../services/proyectos.service");
 
 async function listar(req, res) {
     try { res.json({ success: true, data: await service.listar(req.validatedQuery) }); }
-    catch (error) { console.error("Error listando proyectos:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener los proyectos." }); }
+    catch (error) { logger.error({ err: error }, "Error listando proyectos:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener los proyectos." }); }
 }
 
 async function obtener(req, res) {
@@ -10,23 +11,23 @@ async function obtener(req, res) {
         const data = await service.obtener(req.validatedParams.id);
         if (!data) return res.status(404).json({ success: false, mensaje: "Proyecto no encontrado." });
         res.json({ success: true, data });
-    } catch (error) { console.error("Error obteniendo proyecto:", error); res.status(500).json({ success: false, mensaje: "No se pudo obtener el proyecto." }); }
+    } catch (error) { logger.error({ err: error }, "Error obteniendo proyecto:"); res.status(500).json({ success: false, mensaje: "No se pudo obtener el proyecto." }); }
 }
 
 async function catalogos(req, res) {
     try { res.json({ success: true, data: await service.catalogos() }); }
-    catch (error) { console.error("Error cargando catálogos de proyectos:", error); res.status(500).json({ success: false, mensaje: "No se pudieron cargar los catálogos." }); }
+    catch (error) { logger.error({ err: error }, "Error cargando catálogos de proyectos:"); res.status(500).json({ success: false, mensaje: "No se pudieron cargar los catálogos." }); }
 }
 
 async function resumen(req, res) {
     try { res.json({ success: true, data: await service.resumen() }); }
-    catch (error) { console.error("Error obteniendo resumen de proyectos y tareas:", error); res.status(500).json({ success: false, mensaje: "No se pudo obtener el resumen del equipo." }); }
+    catch (error) { logger.error({ err: error }, "Error obteniendo resumen de proyectos y tareas:"); res.status(500).json({ success: false, mensaje: "No se pudo obtener el resumen del equipo." }); }
 }
 
 async function crear(req, res) {
     try { res.status(201).json({ success: true, mensaje: "Proyecto creado correctamente.", data: await service.crear(req.body) }); }
     catch (error) {
-        console.error("Error creando proyecto:", error);
+        logger.error({ err: error }, "Error creando proyecto:");
         const status = ["COTIZACION_PROYECTO_INVALIDA", "23503"].includes(error.code) ? 400 : 500;
         res.status(status).json({ success: false, mensaje: error.message || "No se pudo crear el proyecto." });
     }

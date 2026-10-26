@@ -1,9 +1,10 @@
+const logger = require("../config/logger");
 const service = require("../services/ventas.service");
 
 async function listar(req, res) {
     try { res.json({ success: true, data: await service.listar(req.validatedQuery) }); }
     catch (error) {
-        console.error("Error listando ventas:", error);
+        logger.error({ err: error }, "Error listando ventas:");
         res.status(500).json({ success: false, mensaje: "No se pudieron obtener las ventas." });
     }
 }
@@ -14,7 +15,7 @@ async function obtener(req, res) {
         if (!data) return res.status(404).json({ success: false, mensaje: "Venta no encontrada." });
         res.json({ success: true, data });
     } catch (error) {
-        console.error("Error obteniendo venta:", error);
+        logger.error({ err: error }, "Error obteniendo venta:");
         res.status(500).json({ success: false, mensaje: "No se pudo obtener la venta." });
     }
 }
@@ -22,7 +23,7 @@ async function obtener(req, res) {
 async function cotizacionesDisponibles(req, res) {
     try { res.json({ success: true, data: await service.cotizacionesDisponibles() }); }
     catch (error) {
-        console.error("Error listando cotizaciones disponibles para venta:", error);
+        logger.error({ err: error }, "Error listando cotizaciones disponibles para venta:");
         res.status(500).json({ success: false, mensaje: "No se pudieron obtener las cotizaciones aprobadas." });
     }
 }
@@ -30,7 +31,7 @@ async function cotizacionesDisponibles(req, res) {
 async function proyectos(req, res) {
     try { res.json({ success: true, data: await service.proyectos() }); }
     catch (error) {
-        console.error("Error listando proyectos para venta:", error);
+        logger.error({ err: error }, "Error listando proyectos para venta:");
         res.status(500).json({ success: false, mensaje: "No se pudieron obtener los proyectos." });
     }
 }
@@ -38,7 +39,7 @@ async function proyectos(req, res) {
 async function resumen(req, res) {
     try { res.json({ success: true, data: await service.resumen() }); }
     catch (error) {
-        console.error("Error obteniendo resumen de ventas:", error);
+        logger.error({ err: error }, "Error obteniendo resumen de ventas:");
         res.status(500).json({ success: false, mensaje: "No se pudo obtener el resumen de ventas." });
     }
 }
@@ -47,7 +48,7 @@ async function crear(req, res) {
     try {
         res.status(201).json({ success: true, mensaje: "Venta registrada correctamente.", data: await service.crear(req.body) });
     } catch (error) {
-        console.error("Error registrando venta:", error);
+        logger.error({ err: error }, "Error registrando venta:");
         const codes = ["COTIZACION_NOT_FOUND", "COTIZACION_NO_APROBADA", "COTIZACION_NO_DISPONIBLE", "VENTA_EXISTENTE", "PROYECTO_INVALIDO"];
         const status = codes.includes(error.code) || error.code === "23505" ? 409 : error.code === "23503" ? 400 : 500;
         res.status(status).json({ success: false, mensaje: error.message || "No se pudo registrar la venta." });
@@ -60,7 +61,7 @@ async function cambiarEstado(req, res) {
         if (!data) return res.status(404).json({ success: false, mensaje: "Venta no encontrada." });
         res.json({ success: true, mensaje: "Estado de la venta actualizado.", data });
     } catch (error) {
-        console.error("Error actualizando estado de venta:", error);
+        logger.error({ err: error }, "Error actualizando estado de venta:");
         res.status(500).json({ success: false, mensaje: "No se pudo actualizar el estado de la venta." });
     }
 }

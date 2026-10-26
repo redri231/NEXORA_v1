@@ -1,5 +1,7 @@
+require("dotenv").config({ quiet: true });
+
 const { Pool } = require("pg");
-require("dotenv").config();
+const logger = require("./logger");
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -9,11 +11,11 @@ const pool = new Pool({
 });
 
 pool.on("connect", () => {
-    console.log("✅ PostgreSQL conectado correctamente");
+    logger.debug({ database: "postgresql" }, "Se abrió una conexión del pool");
 });
 
 pool.on("error", (error) => {
-    console.error("❌ Error inesperado de PostgreSQL:", error);
+    logger.error({ err: error }, "Error inesperado del pool de PostgreSQL");
 });
 
 module.exports = pool;

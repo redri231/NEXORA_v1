@@ -1,4 +1,5 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
+const logger = require("./config/logger");
 
 const app = require("./app");
 const pool = require("./config/database");
@@ -6,6 +7,8 @@ const authService = require("./services/auth.service");
 const iniciarVencimientoCotizaciones = require("./jobs/vencimientoCotizaciones.job");
 const iniciarFinalizacionCampanias = require("./jobs/finalizarCampanias.job");
 const iniciarActualizacionProyectosAtrasados = require("./jobs/actualizarProyectosAtrasados.job");
+const iniciarVencimientoPagos = require("./jobs/vencimientoPagos.job");
+const { crearAdminInicial } = require("./services/adminInicial.service");
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,8 +17,7 @@ async function iniciarServidor() {
     try {
         authService.validarConfiguracion();
     } catch (error) {
-        console.error("Configuración de autenticación inválida:");
-        console.error(error.message);
+        logger.error({ err: error }, "Configuración de autenticación inválida");
         process.exitCode = 1;
         return;
     }
@@ -27,17 +29,20 @@ async function iniciarServidor() {
         iniciarVencimientoCotizaciones();
         iniciarFinalizacionCampanias();
         iniciarActualizacionProyectosAtrasados();
+        iniciarVencimientoPagos();
 
-        console.log("✅ Conexión a PostgreSQL funcionando");
+        logger.info({ database: "postgresql" }, "Conexión a PostgreSQL funcionando");
+
+        await crearAdminInicial();
 
         app.listen(PORT, () => {
-            console.log(`🚀 NEXORA ejecutándose en http://localhost:${PORT}`);
+            logger.info({ port: PORT }, "NEXORA está escuchando");
         });
 
     } catch (error) {
 
-        console.error("❌ No se pudo conectar a PostgreSQL");
-        console.error(error.message);
+        logger.error({ err: error }, "No se pudo iniciar el servidor por un error de PostgreSQL");
+        process.exitCode = 1;
 
     }
 }

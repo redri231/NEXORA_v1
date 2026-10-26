@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const cotizacionesService = require("../services/cotizaciones.service");
 
 const INTERVALO_MS = 60 * 1000;
@@ -10,9 +11,9 @@ function iniciarVencimientoCotizaciones() {
         ejecutando = true;
         try {
             const actualizadas = await cotizacionesService.marcarVencidas();
-            if (actualizadas > 0) console.info(`Cotizaciones vencidas actualizadas: ${actualizadas}`);
+            if (actualizadas > 0) logger.info({ actualizadas }, "Cotizaciones vencidas actualizadas");
         } catch (error) {
-            console.error("No se pudo actualizar el estado de cotizaciones vencidas:", error.message);
+            logger.error({ err: error }, "No se pudo actualizar el estado de cotizaciones vencidas");
         } finally {
             ejecutando = false;
         }

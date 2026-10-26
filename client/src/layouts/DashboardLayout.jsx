@@ -1,8 +1,10 @@
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { AlertasGerencialesProvider } from "../context/AlertasGerencialesContext";
 
 function DashboardLayout({ children }) {
   return (
+    <AlertasGerencialesProvider>
     <div className="min-h-screen bg-nx-bg">
 
       <div className="flex">
@@ -13,7 +15,7 @@ function DashboardLayout({ children }) {
 
           <Topbar />
 
-          <main className="p-6 max-w-[1400px] mx-auto">
+          <main className="animate-fade-in motion-reduce:animate-none mx-auto max-w-[1400px] p-6">
             {children}
           </main>
 
@@ -22,6 +24,7 @@ function DashboardLayout({ children }) {
       </div>
 
     </div>
+    </AlertasGerencialesProvider>
   );
 }
 

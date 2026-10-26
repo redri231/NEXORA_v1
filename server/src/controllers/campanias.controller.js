@@ -1,8 +1,9 @@
+const logger = require("../config/logger");
 const service = require("../services/campanias.service");
 
 async function listar(req, res) {
     try { res.json({ success: true, data: await service.listar(req.validatedQuery) }); }
-    catch (error) { console.error("Error listando campañas:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las campañas." }); }
+    catch (error) { logger.error({ err: error }, "Error listando campañas:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las campañas." }); }
 }
 
 async function obtener(req, res) {
@@ -10,18 +11,18 @@ async function obtener(req, res) {
         const data = await service.obtenerPorId(req.validatedParams.id);
         if (!data) return res.status(404).json({ success: false, mensaje: "Campaña no encontrada." });
         res.json({ success: true, data });
-    } catch (error) { console.error("Error obteniendo campaña:", error); res.status(500).json({ success: false, mensaje: "No se pudo obtener la campaña." }); }
+    } catch (error) { logger.error({ err: error }, "Error obteniendo campaña:"); res.status(500).json({ success: false, mensaje: "No se pudo obtener la campaña." }); }
 }
 
 async function catalogos(req, res) {
     try { res.json({ success: true, data: await service.catalogos() }); }
-    catch (error) { console.error("Error obteniendo catálogos de campañas:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener clientes, usuarios y proyectos." }); }
+    catch (error) { logger.error({ err: error }, "Error obteniendo catálogos de campañas:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener clientes, usuarios y proyectos." }); }
 }
 
 async function crear(req, res) {
     try { res.status(201).json({ success: true, mensaje: "Campaña creada correctamente.", data: await service.crear(req.body) }); }
     catch (error) {
-        console.error("Error creando campaña:", error);
+        logger.error({ err: error }, "Error creando campaña:");
         const status = error.code === "PROYECTO_CLIENTE_INVALIDO" ? 400 : error.code === "23503" ? 400 : 500;
         res.status(status).json({ success: false, mensaje: error.message || "No se pudo crear la campaña." });
     }
@@ -52,7 +53,7 @@ async function cambiarEstado(req, res) {
 
 async function resumen(req, res) {
     try { res.json({ success: true, data: await service.resumenRoi() }); }
-    catch (error) { console.error("Error obteniendo resumen de campañas:", error); res.status(500).json({ success: false, mensaje: "No se pudo obtener el resumen de campañas." }); }
+    catch (error) { logger.error({ err: error }, "Error obteniendo resumen de campañas:"); res.status(500).json({ success: false, mensaje: "No se pudo obtener el resumen de campañas." }); }
 }
 
 async function registrarIndicador(req, res) {
@@ -61,19 +62,19 @@ async function registrarIndicador(req, res) {
         if (!data) return res.status(404).json({ success: false, mensaje: "Campaña no encontrada." });
         res.status(201).json({ success: true, mensaje: "Medición registrada.", data });
     } catch (error) {
-        console.error("Error registrando indicador de campaña:", error);
+        logger.error({ err: error }, "Error registrando indicador de campaña:");
         res.status(500).json({ success: false, mensaje: "No se pudo registrar la medición." });
     }
 }
 
 async function listarProductosMaterial(req, res) {
     try { res.json({ success: true, data: await service.listarProductosMaterial() }); }
-    catch (error) { console.error("Error listando productos para campañas:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener los materiales." }); }
+    catch (error) { logger.error({ err: error }, "Error listando productos para campañas:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener los materiales." }); }
 }
 
 async function listarSolicitudesMaterial(req, res) {
     try { res.json({ success: true, data: await service.listarSolicitudesMaterial(req.validatedParams.id) }); }
-    catch (error) { console.error("Error listando solicitudes de campaña:", error); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las solicitudes." }); }
+    catch (error) { logger.error({ err: error }, "Error listando solicitudes de campaña:"); res.status(500).json({ success: false, mensaje: "No se pudieron obtener las solicitudes." }); }
 }
 
 async function crearSolicitudMaterial(req, res) {
@@ -82,7 +83,7 @@ async function crearSolicitudMaterial(req, res) {
         if (!data) return res.status(404).json({ success: false, mensaje: "Campaña no encontrada." });
         res.status(201).json({ success: true, mensaje: "Solicitud enviada a almacén.", data });
     } catch (error) {
-        console.error("Error creando solicitud de material:", error);
+        logger.error({ err: error }, "Error creando solicitud de material:");
         const status = error.code === "23503" ? 400 : 500;
         res.status(status).json({ success: false, mensaje: "No se pudo registrar la solicitud." });
     }

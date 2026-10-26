@@ -204,6 +204,8 @@ function Cotizaciones() {
     }
   }
 
+  async function exportarPDF() { try { await api.download(`/reportes/cotizaciones/pdf${query ? `?${query}` : ""}`, `NEXORA_Cotizaciones_${fechaHoy()}.pdf`); } catch (err) { setError(err.message || "No se pudo exportar el PDF."); } }
+
   const oportunidadesCliente = oportunidades.filter((oportunidad) => String(oportunidad.id_cliente) === formulario.id_cliente);
 
   return (
@@ -225,6 +227,7 @@ function Cotizaciones() {
             <option value="">Todos los estados</option>{ESTADOS.map((estado) => <option key={estado}>{estado}</option>)}
           </select>
           <button type="button" onClick={exportarExcel} disabled={exportando} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg disabled:opacity-50">{exportando ? "Exportando…" : "Exportar Excel"}</button>
+          <button type="button" onClick={exportarPDF} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg">Descargar PDF</button>
         </div>
 
         <div className="bg-white rounded-2xl shadow-soft border border-nx-line overflow-hidden overflow-x-auto">

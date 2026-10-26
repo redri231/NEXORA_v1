@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const authService = require("../services/auth.service");
 
 async function requerirAutenticacion(req, res, next) {
@@ -17,7 +18,7 @@ async function requerirAutenticacion(req, res, next) {
         req.usuario = usuario;
         return next();
     } catch (error) {
-        console.error("Error al validar sesión:", error);
+        logger.error({ err: error }, "Error al validar sesión:");
         return res.status(500).json({ success: false, mensaje: "No se pudo validar la sesión." });
     }
 }

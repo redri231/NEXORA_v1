@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const crmService = require("../services/crm.service");
 
 
@@ -19,7 +20,7 @@ async function listarClientes(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -56,7 +57,7 @@ async function obtenerCliente(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -85,7 +86,7 @@ async function crearCliente(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         if (error.code === "23505") {
 
@@ -133,7 +134,7 @@ async function actualizarCliente(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         if (error.code === "23505") {
 
@@ -181,7 +182,7 @@ async function desactivarCliente(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -211,7 +212,7 @@ async function listarResponsables(req, res) {
 
     } catch (error) {
 
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -236,7 +237,7 @@ async function listarLeads(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -265,7 +266,7 @@ async function obtenerLead(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -286,7 +287,7 @@ async function crearLead(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         if (error.code === "23505") {
             return res.status(409).json({
@@ -324,7 +325,7 @@ async function actualizarLead(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         if (error.code === "23505") {
             return res.status(409).json({
@@ -366,7 +367,7 @@ async function cambiarEstadoLead(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error({ err: error }, "Error en la solicitud CRM");
 
         res.status(500).json({
             success: false,
@@ -388,7 +389,7 @@ async function convertirLead(req, res) {
             data
         });
     } catch (error) {
-        console.error("Error al convertir lead:", error);
+        logger.error({ err: error }, "Error al convertir lead:");
 
         if (error.code === "LEAD_NOT_FOUND") {
             return res.status(404).json({ success: false, mensaje: error.message });
@@ -421,7 +422,7 @@ async function listarOportunidades(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al obtener oportunidades:", error);
+        logger.error({ err: error }, "Error al obtener oportunidades:");
 
         res.status(500).json({
             success: false,
@@ -450,7 +451,7 @@ async function obtenerOportunidad(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al obtener oportunidad:", error);
+        logger.error({ err: error }, "Error al obtener oportunidad:");
 
         res.status(500).json({
             success: false,
@@ -472,7 +473,7 @@ async function registrarOportunidad(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al crear oportunidad:", error);
+        logger.error({ err: error }, "Error al crear oportunidad:");
 
         res.status(400).json({
             success: false,
@@ -502,7 +503,7 @@ async function editarOportunidad(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al actualizar oportunidad:", error);
+        logger.error({ err: error }, "Error al actualizar oportunidad:");
 
         res.status(400).json({
             success: false,
@@ -541,7 +542,7 @@ async function actualizarEtapaOportunidad(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al cambiar etapa:", error);
+        logger.error({ err: error }, "Error al cambiar etapa:");
 
         res.status(400).json({
             success: false,
@@ -567,7 +568,7 @@ async function listarSeguimientos(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al obtener seguimientos:", error);
+        logger.error({ err: error }, "Error al obtener seguimientos:");
 
         res.status(500).json({
             success: false,
@@ -590,7 +591,7 @@ async function registrarSeguimiento(req, res) {
         });
 
     } catch (error) {
-        console.error("Error al crear seguimiento:", error);
+        logger.error({ err: error }, "Error al crear seguimiento:");
 
         res.status(400).json({
             success: false,

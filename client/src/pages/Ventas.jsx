@@ -135,6 +135,8 @@ function Ventas() {
     }
   }
 
+  async function exportarPDF() { try { const fecha = new Date().toISOString().slice(0, 10); await api.download(`/reportes/ventas/pdf${query ? `?${query}` : ""}`, `NEXORA_Ventas_${fecha}.pdf`); } catch (err) { setError(err.message || "No se pudo exportar el PDF."); } }
+
   const cotizacionElegida = cotizaciones.find((item) => String(item.id_cotizacion) === cotizacionSeleccionada);
   const proyectosDisponibles = proyectos.filter((proyecto) =>
     cotizacionElegida && Number(proyecto.id_cliente) === Number(cotizacionElegida.id_cliente) &&
@@ -165,6 +167,7 @@ function Ventas() {
           <input type="search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar venta, cliente, cotización, servicio o proyecto…" className="flex-1 min-w-[240px] border border-nx-line rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-violet" />
           <select value={estadoFiltro} onChange={(event) => setEstadoFiltro(event.target.value)} className="border border-nx-line rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos los estados</option>{ESTADOS.map((estado) => <option key={estado}>{estado}</option>)}</select>
           <button type="button" onClick={exportarExcel} disabled={exportando} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg disabled:opacity-50">{exportando ? "Exportando…" : "Exportar Excel"}</button>
+          <button type="button" onClick={exportarPDF} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg">Descargar PDF</button>
         </div>
 
         <div className="bg-white rounded-2xl shadow-soft border border-nx-line overflow-hidden overflow-x-auto">

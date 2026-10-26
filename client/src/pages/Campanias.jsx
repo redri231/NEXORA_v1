@@ -110,6 +110,8 @@ function Campanias() {
     finally { setExportando(false); }
   }
 
+  async function exportarPDF() { try { const fecha = new Date().toISOString().slice(0, 10); await api.download(`/reportes/campanias/pdf${query ? `?${query}` : ""}`, `NEXORA_Campanias_${fecha}.pdf`); } catch (err) { setError(err.message || "No se pudo exportar el PDF."); } }
+
   async function abrirDetalle(campania) {
     try {
       const [response, solicitudes] = await Promise.all([
@@ -163,6 +165,7 @@ function Campanias() {
         <input type="search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar campaña, cliente o canal…" className="flex-1 min-w-[220px] border border-nx-line rounded-lg px-3 py-2 text-sm" />
         <select value={estadoFiltro} onChange={(event) => setEstadoFiltro(event.target.value)} className="border border-nx-line rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos los estados</option>{ESTADOS.map((estado) => <option key={estado}>{estado}</option>)}</select>
         <button type="button" onClick={exportarExcel} disabled={exportando} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg disabled:opacity-50">{exportando ? "Exportando…" : "Exportar Excel"}</button>
+        <button type="button" onClick={exportarPDF} className="border border-nx-line bg-white hover:bg-nx-bg text-nx-800 font-semibold text-sm px-4 py-2 rounded-lg">Descargar PDF</button>
       </div>
       {cargando ? <div className="rounded-2xl bg-white p-12 text-center text-slate-400">Cargando campañas…</div> : campanias.length === 0 ? <div className="rounded-2xl bg-white p-12 text-center text-slate-400">No hay campañas que coincidan con la búsqueda.</div> : <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {campanias.map((campania) => {

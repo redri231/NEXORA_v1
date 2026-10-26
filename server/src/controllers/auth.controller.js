@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const authService = require("../services/auth.service");
 
 async function iniciarSesion(req, res) {
@@ -14,7 +15,7 @@ async function iniciarSesion(req, res) {
 
         return res.json({ success: true, data: sesion });
     } catch (error) {
-        console.error("Error al iniciar sesión:", error);
+        logger.error({ err: error }, "Error al iniciar sesión:");
         return res.status(500).json({ success: false, mensaje: "No se pudo iniciar sesión." });
     }
 }

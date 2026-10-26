@@ -11,6 +11,36 @@ const ROL_BADGE = {
   Finanzas: "bg-rose-100 text-rose-700",
 };
 
+const AREAS = [
+  "Sistemas",
+  "Gerencia",
+  "Marketing y Ventas",
+  "Operaciones",
+  "Logística",
+  "Finanzas",
+];
+
+const AREA_POR_ROL = {
+  Administrador: "Sistemas",
+  Gerencia: "Gerencia",
+  "Marketing y Ventas": "Marketing y Ventas",
+  Operaciones: "Operaciones",
+  Logística: "Logística",
+  Finanzas: "Finanzas",
+};
+
+const CARGOS_SUGERIDOS = [
+  "Administrador",
+  "Gerente",
+  "Coordinador",
+  "Analista",
+  "Asistente",
+  "Ejecutivo de ventas",
+  "Operario",
+  "Almacenero",
+  "Contador",
+];
+
 const FORM_INICIAL = {
   nombres: "",
   apellidos: "",
@@ -161,6 +191,9 @@ function Usuarios() {
       id_rol: roles.length > 0
         ? String(roles[0].id_rol)
         : "",
+      area: roles.length > 0
+        ? AREA_POR_ROL[roles[0].nombre] || ""
+        : "",
     });
 
     setMensaje("");
@@ -230,10 +263,18 @@ function Usuarios() {
       value
     } = event.target;
 
-    setFormulario((actual) => ({
-      ...actual,
-      [name]: value,
-    }));
+    setFormulario((actual) => {
+      if (name === "id_rol") {
+        const rolSeleccionado = roles.find((rol) => String(rol.id_rol) === value);
+        return {
+          ...actual,
+          id_rol: value,
+          area: AREA_POR_ROL[rolSeleccionado?.nombre] || actual.area,
+        };
+      }
+
+      return { ...actual, [name]: value };
+    });
 
   }
 
@@ -469,6 +510,8 @@ function Usuarios() {
 
   }
 
+  async function exportarPDF() { try { const fecha = new Date().toISOString().slice(0, 10); await api.download("/reportes/usuarios/pdf", `NEXORA_Reporte_Usuarios_${fecha}.pdf`); } catch (error) { setError(error.message || "No se pudo exportar el PDF."); } }
+
 
   // =========================================================
   // RENDER
@@ -537,6 +580,8 @@ function Usuarios() {
               }
 
             </button>
+
+            <button type="button" onClick={exportarPDF} className="rounded-xl border border-nx-line bg-white px-4 py-2.5 text-sm font-semibold">Descargar PDF</button>
 
 
             {/* NUEVO USUARIO */}
@@ -1386,6 +1431,9 @@ function Usuarios() {
                     name="cargo"
                     value={formulario.cargo}
                     onChange={cambiarCampo}
+                    list="cargos-sugeridos"
+                    maxLength={60}
+                    placeholder="Escribe o elige una sugerencia"
                     className="
                       w-full
                       border
@@ -1400,6 +1448,12 @@ function Usuarios() {
                       focus:ring-brand-violet/10
                     "
                   />
+
+                  <datalist id="cargos-sugeridos">
+                    {CARGOS_SUGERIDOS.map((cargo) => (
+                      <option key={cargo} value={cargo} />
+                    ))}
+                  </datalist>
 
                 </div>
 
@@ -1418,8 +1472,7 @@ function Usuarios() {
                     Área
                   </label>
 
-                  <input
-                    type="text"
+                  <select
                     name="area"
                     value={formulario.area}
                     onChange={cambiarCampo}
@@ -1436,7 +1489,15 @@ function Usuarios() {
                       focus:ring-2
                       focus:ring-brand-violet/10
                     "
-                  />
+                  >
+                    <option value="">Seleccionar área</option>
+                    {formulario.area && !AREAS.includes(formulario.area) && (
+                      <option value={formulario.area}>{formulario.area} (actual)</option>
+                    )}
+                    {AREAS.map((area) => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
 
                 </div>
 

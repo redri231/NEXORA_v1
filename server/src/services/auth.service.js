@@ -1,3 +1,4 @@
+const logger = require("../config/logger");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const authModel = require("../models/auth.model");
@@ -18,7 +19,7 @@ function obtenerSecreto() {
 function validarConfiguracion() {
     if (!process.env.AUTH_SECRET && process.env.NODE_ENV !== "production") {
         process.env.AUTH_SECRET = crypto.randomBytes(48).toString("base64url");
-        console.warn("AUTH_SECRET no está configurado; se generó uno temporal para desarrollo. Las sesiones vencerán al reiniciar el servidor.");
+        logger.warn("AUTH_SECRET no está configurado; se generó uno temporal para desarrollo. Las sesiones vencerán al reiniciar el servidor.");
     }
 
     obtenerSecreto();
