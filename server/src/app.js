@@ -70,5 +70,12 @@ app.get("/", (req, res) => {
 
 });
 
+app.use((err, req, res, next) => {
+  logger.error({ err }, 'Error interno del servidor');
+  res.status(500).json({
+    mensaje: 'Error interno del servidor'
+  });
+});
+
 
 module.exports = app;
