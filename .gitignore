@@ -3,3 +3,5 @@ client/dist/
 server/.env
 .env
 *.log
+client/playwright-report/
+client/test-results/
