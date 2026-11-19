@@ -7,7 +7,9 @@ const STORAGE_KEY = "nexora.session";
 async function cargarPermisos(usuario) {
   try {
     const respuesta = await api.get("/configuracion/mis-permisos");
-    return { ...usuario, modulos_permitidos: respuesta.data?.data || [] };
+    const modulos = respuesta?.data;
+    if (!Array.isArray(modulos)) throw new Error("La respuesta de permisos no tiene el formato esperado.");
+    return { ...usuario, modulos_permitidos: modulos };
   } catch {
     return usuario;
   }

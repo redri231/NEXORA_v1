@@ -12,6 +12,7 @@ const { crearAdminInicial } = require("./services/adminInicial.service");
 
 const PORT = process.env.PORT || 3000;
 
+
 async function iniciarServidor() {
 
     try {
