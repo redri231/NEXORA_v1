@@ -26,6 +26,7 @@ const registrarActividad = require("./middleware/registrarActividad");
 
 const logger = require("./config/logger");
 const pinoHttp = require("pino-http");
+const pool = require("./config/database");
 
 const app = express();
 
@@ -85,6 +86,28 @@ app.use(registrarActividad);
 // ==========================================
 // API
 // ==========================================
+
+app.get("/api/health", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    return res.status(200).json({
+      success: true,
+      servicio: "nexora-api",
+      estado: "OK",
+      base_datos: "conectada",
+      fecha: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Health check: PostgreSQL no disponible");
+    return res.status(503).json({
+      success: false,
+      servicio: "nexora-api",
+      estado: "degradado",
+      base_datos: "no disponible",
+      fecha: new Date().toISOString(),
+    });
+  }
+});
 
 app.use("/api/auth", authRoutes);
 
